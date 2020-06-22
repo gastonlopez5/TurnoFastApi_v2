@@ -22,6 +22,8 @@ namespace TurnoFast.Models
 
         public Boolean TurnoTarde { get; set; }
 
+        public int Frecuencia { get; set; }
+
         public int ProfesionalId { get; set; }
 
         public int ServicioId { get; set; }
