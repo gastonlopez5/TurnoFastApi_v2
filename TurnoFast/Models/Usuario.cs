@@ -16,7 +16,7 @@ namespace TurnoFast.Models
         
         public string Apellido { get; set; }
         
-        public string Telefono { get; set; }
+        public string Telefono2 { get; set; }
        
         public string Email { get; set; }
         
