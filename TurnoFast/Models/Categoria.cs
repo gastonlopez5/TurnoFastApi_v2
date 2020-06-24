@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace TurnoFast.Models
 {
-    public class Especialidad
+    public class Categoria
     {
         [Key]
         public int Id { get; set; }
 
         public String Nombre { get; set; }
 
-        public List<Servicio> Servicios { get; set; }
+        public List<Prestacion> Prestaciones { get; set; }
     }
 }

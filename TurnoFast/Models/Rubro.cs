@@ -15,6 +15,6 @@ namespace TurnoFast.Models
 
         public String RutaFoto { get; set; }
 
-        public List<Especialidad> Especialidades { get; set; }
+        public List<Categoria> Especialidades { get; set; }
     }
 }

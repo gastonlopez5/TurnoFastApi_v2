@@ -7,12 +7,14 @@ using System.Threading.Tasks;
 
 namespace TurnoFast.Models
 {
-    public class HorarioDisponible
+    public class Prestacion
     {
         [Key]
         public int Id { get; set; }
 
-        public DateTime Fecha { get; set; }
+        public DateTime FechaInicio { get; set; }
+
+        public DateTime FechaFin { get; set; }
 
         public DateTime HoraInicio { get; set; }
 
@@ -24,15 +26,25 @@ namespace TurnoFast.Models
 
         public int Frecuencia { get; set; }
 
+        public String Telefono { get; set; }
+
+        public String Direccion { get; set; }
+
+        public String Nombre { get; set; }
+
+        public String Logo { get; set; }
+
+        public Boolean Disponible { get; set; }
+
         public int ProfesionalId { get; set; }
 
-        public int ServicioId { get; set; }
+        public int CategoriaId { get; set; }
 
         [ForeignKey("ProfesionalId")]
         public Usuario Profesional { get; set; }
 
-        [ForeignKey("ServicioId")]
-        public Servicio Servicio { get; set; }
+        [ForeignKey("CategoriaId")]
+        public Categoria Categoria { get; set; }
 
         public List<Turno> Turnos { get; set; }
     }

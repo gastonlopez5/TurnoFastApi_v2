@@ -28,6 +28,6 @@ namespace TurnoFast.Models
 
         public List<Turno> Turnos { get; set; }
         
-        public List<HorarioDisponible> HorariosDisponibles { get; set; }
+        public List<Prestacion> HorariosDisponibles { get; set; }
     }
 }

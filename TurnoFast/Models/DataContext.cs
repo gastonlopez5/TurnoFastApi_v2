@@ -13,10 +13,9 @@ namespace TurnoFast.Models
 
         }
         public DbSet<Usuario> Usuarios { get; set; }
-        public DbSet<Servicio> Servicios { get; set; }
         public DbSet<Turno> Turnos { get; set; }
-        public DbSet<HorarioDisponible> HorariosDisponibles { get; set; }
+        public DbSet<Prestacion> Prestaciones { get; set; }
         public DbSet<Rubro> Rubros { get; set; }
-        public DbSet<Especialidad> Especialidades { get; set; }
+        public DbSet<Categoria> Categorias { get; set; }
     }
 }

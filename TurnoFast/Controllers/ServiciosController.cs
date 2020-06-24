@@ -31,35 +31,47 @@ namespace TurnoFast.Controllers
 
         // GET: api/Servicios
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Servicio>>> GetServicios()
+        public async Task<ActionResult<IEnumerable<Prestacion>>> GetServicios()
         {
-            return await _context.Servicios.ToListAsync();
+            try
+            {
+                return await _context.Prestaciones
+                    .Include(x => x.Profesional)
+                    .Include(a => a.Categoria)
+                    .Where(x => x.Profesional.Email == User.Identity.Name)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+            
         }
 
         // GET: api/Servicios/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Servicio>> GetServicio(int id)
+        public async Task<ActionResult<Prestacion>> GetPrestacion(int id)
         {
-            var servicio = await _context.Servicios.FindAsync(id);
+            var prestacion = await _context.Prestaciones.FindAsync(id);
 
-            if (servicio == null)
+            if (prestacion == null)
             {
                 return NotFound();
             }
 
-            return servicio;
+            return prestacion;
         }
 
         // PUT: api/Servicios/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutServicio(int id, Servicio servicio)
+        public async Task<IActionResult> PutServicio(int id, Prestacion prestacion)
         {
-            if (id != servicio.Id)
+            if (id != prestacion.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(servicio).State = EntityState.Modified;
+            _context.Entry(prestacion).State = EntityState.Modified;
 
             try
             {
@@ -67,7 +79,7 @@ namespace TurnoFast.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ServicioExists(id))
+                if (!PrestacionExists(id))
                 {
                     return NotFound();
                 }
@@ -82,14 +94,14 @@ namespace TurnoFast.Controllers
 
         // POST: api/Servicios
         [HttpPost]
-        public async Task<ActionResult<Servicio>> PostServicio(Servicio servicio)
+        public async Task<ActionResult<Prestacion>> PostPrestacion(Prestacion prestacion)
         {
             try
             {
-                _context.Servicios.Add(servicio);
+                _context.Prestaciones.Add(prestacion);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetServicio", new { id = servicio.Id }, servicio);
+                return CreatedAtAction("GetPrestacion", new { id = prestacion.Id }, prestacion);
             }
             catch (Exception ex)
             {
@@ -99,23 +111,23 @@ namespace TurnoFast.Controllers
 
         // DELETE: api/Servicios/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Servicio>> DeleteServicio(int id)
+        public async Task<ActionResult<Prestacion>> DeleteServicio(int id)
         {
-            var servicio = await _context.Servicios.FindAsync(id);
-            if (servicio == null)
+            var prestacion = await _context.Prestaciones.FindAsync(id);
+            if (prestacion == null)
             {
                 return NotFound();
             }
 
-            _context.Servicios.Remove(servicio);
+            _context.Prestaciones.Remove(prestacion);
             await _context.SaveChangesAsync();
 
-            return servicio;
+            return prestacion;
         }
 
-        private bool ServicioExists(int id)
+        private bool PrestacionExists(int id)
         {
-            return _context.Servicios.Any(e => e.Id == id);
+            return _context.Prestaciones.Any(e => e.Id == id);
         }
     }
 }

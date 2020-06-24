@@ -28,6 +28,6 @@ namespace TurnoFast.Models
         public Usuario Usuario { get; set; }
 
         [ForeignKey("HorarioDisponibleId")]
-        public HorarioDisponible HorarioDisponible { get; set; }
+        public Prestacion HorarioDisponible { get; set; }
     }
 }
