@@ -12,17 +12,21 @@ namespace TurnoFast.Models
         [Key]
         public int Id { get; set; }
 
-        public DateTime FechaInicio { get; set; }
+        public DateTime FechaInicioManiana { get; set; }
 
-        public DateTime FechaFin { get; set; }
+        public DateTime FechaFinManiana { get; set; }
 
-        public DateTime HoraInicio { get; set; }
+        public DateTime HoraInicioManiana { get; set; }
 
-        public DateTime HoraFin { get; set; }
+        public DateTime HoraFinManiana { get; set; }
 
-        public Boolean TurnoManiana { get; set; }
+        public DateTime FechaInicioTarde { get; set; }
 
-        public Boolean TurnoTarde { get; set; }
+        public DateTime FechaFinTarde { get; set; }
+
+        public DateTime HoraInicioTarde { get; set; }
+
+        public DateTime HoraFinTarde { get; set; }
 
         public int Frecuencia { get; set; }
 
