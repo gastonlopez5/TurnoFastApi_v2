@@ -16,13 +16,13 @@ namespace TurnoFast.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class ServiciosController : ControllerBase
+    public class PrestacionesController : ControllerBase
     {
         private readonly DataContext _context;
         private readonly IConfiguration config;
         private readonly IHostingEnvironment environment;
 
-        public ServiciosController(DataContext context, IConfiguration config, IHostingEnvironment environment)
+        public PrestacionesController(DataContext context, IConfiguration config, IHostingEnvironment environment)
         {
             _context = context;
             this.config = config;
