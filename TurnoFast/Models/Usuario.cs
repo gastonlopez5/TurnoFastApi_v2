@@ -25,9 +25,5 @@ namespace TurnoFast.Models
         public string Clave { get; set; }
 
         public Boolean Estado { get; set; }
-
-        public List<Turno> Turnos { get; set; }
-        
-        public List<Prestacion> HorariosDisponibles { get; set; }
     }
 }

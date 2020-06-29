@@ -31,7 +31,7 @@ namespace TurnoFast.Controllers
 
         // GET: api/Servicios
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Prestacion>>> GetServicios()
+        public async Task<ActionResult<IEnumerable<Prestacion>>> GetPrestaciones()
         {
             try
             {
@@ -96,8 +96,10 @@ namespace TurnoFast.Controllers
         [HttpPost]
         public async Task<ActionResult<Prestacion>> PostPrestacion(Prestacion prestacion)
         {
+            
             try
             {
+                prestacion.ProfesionalId = _context.Usuarios.FirstOrDefault(x => x.Email == User.Identity.Name).Id;   
                 _context.Prestaciones.Add(prestacion);
                 await _context.SaveChangesAsync();
 

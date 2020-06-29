@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using TurnoFastApi.Models;
 
 namespace TurnoFast.Models
 {
@@ -11,24 +12,6 @@ namespace TurnoFast.Models
     {
         [Key]
         public int Id { get; set; }
-
-        public DateTime FechaInicioManiana { get; set; }
-
-        public DateTime FechaFinManiana { get; set; }
-
-        public DateTime HoraInicioManiana { get; set; }
-
-        public DateTime HoraFinManiana { get; set; }
-
-        public DateTime FechaInicioTarde { get; set; }
-
-        public DateTime FechaFinTarde { get; set; }
-
-        public DateTime HoraInicioTarde { get; set; }
-
-        public DateTime HoraFinTarde { get; set; }
-
-        public int Frecuencia { get; set; }
 
         public String Telefono { get; set; }
 
@@ -50,6 +33,7 @@ namespace TurnoFast.Models
         [ForeignKey("CategoriaId")]
         public Categoria Categoria { get; set; }
 
-        public List<Turno> Turnos { get; set; }
+        public List<Horario> Horarios { get; set; }
+
     }
 }

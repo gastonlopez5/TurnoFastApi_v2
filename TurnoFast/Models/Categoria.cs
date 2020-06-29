@@ -12,7 +12,5 @@ namespace TurnoFast.Models
         public int Id { get; set; }
 
         public String Nombre { get; set; }
-
-        public List<Prestacion> Prestaciones { get; set; }
     }
 }
