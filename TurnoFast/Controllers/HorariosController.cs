@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TurnoFast.Models;
 using TurnoFastApi.Models;
 
@@ -12,13 +16,18 @@ namespace TurnoFastApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class HorariosController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly IConfiguration config;
+        private readonly IHostingEnvironment environment;
 
-        public HorariosController(DataContext context)
+        public HorariosController(DataContext context, IConfiguration config, IHostingEnvironment environment)
         {
             _context = context;
+            this.config = config;
+            this.environment = environment;
         }
 
         // GET: api/Horarios
@@ -74,9 +83,9 @@ namespace TurnoFastApi.Controllers
 
         // POST: api/Horarios
         [HttpPost]
-        public async Task<ActionResult<Horario>> PostHorario(Horario horario)
+        public async Task<ActionResult<Horario>> PostHorario(Horario2 horario)
         {
-            _context.Horarios.Add(horario);
+            //_context.Horarios.Add(horario);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetHorario", new { id = horario.Id }, horario);
