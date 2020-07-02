@@ -83,12 +83,38 @@ namespace TurnoFastApi.Controllers
 
         // POST: api/Horarios
         [HttpPost]
-        public async Task<ActionResult<Horario>> PostHorario(Horario2 horario)
+        public async Task<ActionResult<Horario>> PostHorario(Horario2 horario2)
         {
-            //_context.Horarios.Add(horario);
-            await _context.SaveChangesAsync();
+            try
+            {
+                Horario horario = null;
+                Msj msj = new Msj();
 
-            return CreatedAtAction("GetHorario", new { id = horario.Id }, horario);
+                for (int i = 0; i < horario2.DiasLaborables.Count; i++)
+                {
+                    horario = new Horario();
+
+                    horario.DiaSemana = horario2.DiasLaborables[i];
+                    horario.HoraDesdeManiana = DateTime.Parse(horario2.HoraDesdeManiana.hour+":"+ horario2.HoraDesdeManiana.minute);
+                    horario.HoraHastaManiana = DateTime.Parse(horario2.HoraHastaManiana.hour + ":" + horario2.HoraHastaManiana.minute);
+                    horario.HoraDesdeTarde = DateTime.Parse(horario2.HoraDesdeTarde.hour + ":" + horario2.HoraDesdeTarde.minute);
+                    horario.HoraHastaTarde = DateTime.Parse(horario2.HoraHastaTarde.hour + ":" + horario2.HoraHastaTarde.minute);
+                    horario.Frecuencia = horario2.Frecuencia;
+                    horario.PrestacionId = horario2.PrestacionId;
+
+                    _context.Horarios.Add(horario);
+                    await _context.SaveChangesAsync();
+                }
+
+                msj.Mensaje = "Datos guardados correctamente!";
+
+                return Ok(msj);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+            
         }
 
         // DELETE: api/Horarios/5
