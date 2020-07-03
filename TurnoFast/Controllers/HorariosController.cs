@@ -38,27 +38,41 @@ namespace TurnoFastApi.Controllers
         }
 
         // GET: api/Horarios/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Horario2>> GetHorario(int id)
+        [HttpGet("{id}/{nrodia}")]
+        public async Task<ActionResult<Horario2>> GetHorario(int id, int nrodia)
         {
-            var horarios = await _context.Horarios.Where(x => x.PrestacionId == id).ToListAsync();
-            List<String> dias = new List<string>();
-            Horario2 horario2 = new Horario2();
-
-            if (horarios == null)
+            try
             {
-                return NotFound();
-            }
+                var horario = await _context.Horarios.Where(x => x.PrestacionId == id && x.DiaSemana == nrodia).FirstOrDefaultAsync();
+                Horario2 horario2 = new Horario2();
 
-            for(int i=0; i<horarios.Count; i++)
+                if (horario == null)
+                {
+                    return BadRequest();
+                }
+
+                horario2.DiaSemana = horario.DiaSemana;
+                horario2.Frecuencia = horario.Frecuencia;
+
+                if (horario.HoraDesdeManiana != null)
+                {
+                    horario2.HoraDesdeManiana = new Time(horario.HoraDesdeManiana.Hour, horario.HoraDesdeManiana.Minute, 0, 0);
+                    horario2.HoraHastaManiana = new Time(horario.HoraHastaManiana.Hour, horario.HoraHastaManiana.Minute, 0, 0);
+                }
+
+                if (horario.HoraDesdeTarde != null)
+                {
+                    horario2.HoraDesdeTarde = new Time(horario.HoraDesdeTarde.Hour, horario.HoraDesdeTarde.Minute, 0, 0);
+                    horario2.HoraHastaTarde = new Time(horario.HoraHastaTarde.Hour, horario.HoraHastaTarde.Minute, 0, 0);
+                }
+
+                return horario2;
+            }
+            catch (Exception ex)
             {
-                //dias.Add(horarios[i].DiaSemana);
+                return BadRequest(ex);
             }
-
-            horario2.DiasLaborables = dias;
-            horario2.HoraDesdeManiana = new Time(horarios[0].HoraDesdeManiana.Hour, horarios[0].HoraDesdeManiana.Minute, 0, 0);
-
-            return horario2;
+            
         }
 
         // PUT: api/Horarios/5
@@ -100,10 +114,18 @@ namespace TurnoFastApi.Controllers
                 Horario horario = new Horario();
                 Msj msj = new Msj();
 
-                horario.HoraDesdeManiana = DateTime.Parse(horario2.HoraDesdeManiana.hour+":"+ horario2.HoraDesdeManiana.minute);
-                horario.HoraHastaManiana = DateTime.Parse(horario2.HoraHastaManiana.hour + ":" + horario2.HoraHastaManiana.minute);
-                horario.HoraDesdeTarde = DateTime.Parse(horario2.HoraDesdeTarde.hour + ":" + horario2.HoraDesdeTarde.minute);
-                horario.HoraHastaTarde = DateTime.Parse(horario2.HoraHastaTarde.hour + ":" + horario2.HoraHastaTarde.minute);
+                if(horario2.HoraDesdeManiana != null)
+                {
+                    horario.HoraDesdeManiana = DateTime.Parse(horario2.HoraDesdeManiana.hour + ":" + horario2.HoraDesdeManiana.minute);
+                    horario.HoraHastaManiana = DateTime.Parse(horario2.HoraHastaManiana.hour + ":" + horario2.HoraHastaManiana.minute);
+                }
+                
+                if(horario2.HoraDesdeTarde != null)
+                {
+                    horario.HoraDesdeTarde = DateTime.Parse(horario2.HoraDesdeTarde.hour + ":" + horario2.HoraDesdeTarde.minute);
+                    horario.HoraHastaTarde = DateTime.Parse(horario2.HoraHastaTarde.hour + ":" + horario2.HoraHastaTarde.minute);
+                }
+                
                 horario.Frecuencia = horario2.Frecuencia;
                 horario.PrestacionId = horario2.PrestacionId;
                 horario.DiaSemana = horario2.DiaSemana;
