@@ -8,7 +8,7 @@ namespace TurnoFastApi.Models
     public class Horario2
     {
         public int Id { get; set; }
-        public String DiaSemana { get; set; }
+        public int DiaSemana { get; set; }
         public Time HoraDesdeManiana { get; set; }
         public Time HoraHastaManiana { get; set; }
         public Time HoraDesdeTarde { get; set; }
