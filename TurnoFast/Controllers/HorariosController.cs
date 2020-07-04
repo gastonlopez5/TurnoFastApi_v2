@@ -53,14 +53,15 @@ namespace TurnoFastApi.Controllers
 
                 horario2.DiaSemana = horario.DiaSemana;
                 horario2.Frecuencia = horario.Frecuencia;
+                horario2.Id = horario.Id;
 
-                if (horario.HoraDesdeManiana != null)
+                if (horario.HoraDesdeManiana.Year != DateTime.MaxValue.Year)
                 {
                     horario2.HoraDesdeManiana = new Time(horario.HoraDesdeManiana.Hour, horario.HoraDesdeManiana.Minute, 0, 0);
                     horario2.HoraHastaManiana = new Time(horario.HoraHastaManiana.Hour, horario.HoraHastaManiana.Minute, 0, 0);
                 }
 
-                if (horario.HoraDesdeTarde != null)
+                if (horario.HoraDesdeTarde.Year != DateTime.MaxValue.Year)
                 {
                     horario2.HoraDesdeTarde = new Time(horario.HoraDesdeTarde.Hour, horario.HoraDesdeTarde.Minute, 0, 0);
                     horario2.HoraHastaTarde = new Time(horario.HoraHastaTarde.Hour, horario.HoraHastaTarde.Minute, 0, 0);
@@ -76,33 +77,56 @@ namespace TurnoFastApi.Controllers
         }
 
         // PUT: api/Horarios/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutHorario(int id, Horario horario)
+        [HttpPut]
+        public async Task<IActionResult> PutHorario([FromBody] Horario2 entidad)
         {
-            if (id != horario.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(horario).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!HorarioExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                Horario horario = null;
+                Msj mensaje = new Msj();
 
-            return NoContent();
+                if (ModelState.IsValid && _context.Horarios.AsNoTracking().SingleOrDefault(e => e.Id == entidad.Id) != null)
+                {
+                    horario = _context.Horarios.SingleOrDefault(x => x.Id == entidad.Id);
+                    horario.Frecuencia = entidad.Frecuencia;
+                    horario.DiaSemana = entidad.DiaSemana;
+
+                    if (entidad.HoraDesdeManiana != null)
+                    {
+                        horario.HoraDesdeManiana = DateTime.Parse(entidad.HoraDesdeManiana.hour + ":" + entidad.HoraDesdeManiana.minute);
+                        horario.HoraHastaManiana = DateTime.Parse(entidad.HoraHastaManiana.hour + ":" + entidad.HoraHastaManiana.minute);
+                    }
+                    else
+                    {
+                        horario.HoraDesdeManiana = DateTime.MaxValue;
+                        horario.HoraHastaManiana = DateTime.MaxValue;
+                    }
+
+                    if (entidad.HoraDesdeTarde != null)
+                    {
+                        horario.HoraDesdeTarde = DateTime.Parse(entidad.HoraDesdeTarde.hour + ":" + entidad.HoraDesdeTarde.minute);
+                        horario.HoraHastaTarde = DateTime.Parse(entidad.HoraHastaTarde.hour + ":" + entidad.HoraHastaTarde.minute);
+                    }
+                    else
+                    {
+                        horario.HoraDesdeTarde = DateTime.MaxValue;
+                        horario.HoraHastaTarde = DateTime.MaxValue;
+                    }
+                    
+                    _context.Horarios.Update(horario);
+                    _context.SaveChanges();
+
+                    mensaje.Mensaje = "Datos actualizados correctamente!";
+
+                    return Ok(mensaje);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        
         }
 
         // POST: api/Horarios
@@ -119,13 +143,23 @@ namespace TurnoFastApi.Controllers
                     horario.HoraDesdeManiana = DateTime.Parse(horario2.HoraDesdeManiana.hour + ":" + horario2.HoraDesdeManiana.minute);
                     horario.HoraHastaManiana = DateTime.Parse(horario2.HoraHastaManiana.hour + ":" + horario2.HoraHastaManiana.minute);
                 }
-                
-                if(horario2.HoraDesdeTarde != null)
+                else
+                {
+                    horario.HoraDesdeManiana = DateTime.MaxValue;
+                    horario.HoraHastaManiana = DateTime.MaxValue;
+                }
+
+                if (horario2.HoraDesdeTarde != null)
                 {
                     horario.HoraDesdeTarde = DateTime.Parse(horario2.HoraDesdeTarde.hour + ":" + horario2.HoraDesdeTarde.minute);
                     horario.HoraHastaTarde = DateTime.Parse(horario2.HoraHastaTarde.hour + ":" + horario2.HoraHastaTarde.minute);
                 }
-                
+                else
+                {
+                    horario.HoraDesdeTarde = DateTime.MaxValue;
+                    horario.HoraHastaTarde = DateTime.MaxValue;
+                }
+
                 horario.Frecuencia = horario2.Frecuencia;
                 horario.PrestacionId = horario2.PrestacionId;
                 horario.DiaSemana = horario2.DiaSemana;
@@ -145,19 +179,31 @@ namespace TurnoFastApi.Controllers
         }
 
         // DELETE: api/Horarios/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Horario>> DeleteHorario(int id)
+        [HttpDelete("{id}/{nrodia}")]
+        public async Task<ActionResult<Horario>> DeleteHorario(int id, int nrodia)
         {
-            var horario = await _context.Horarios.FindAsync(id);
-            if (horario == null)
+            try
             {
-                return NotFound();
+                Msj mensaje = new Msj();
+                var horario = await _context.Horarios.Where(x => x.PrestacionId == id && x.DiaSemana == nrodia).FirstOrDefaultAsync(); ;
+                
+                if (horario == null)
+                {
+                    return BadRequest();
+                }
+
+                _context.Horarios.Remove(horario);
+                await _context.SaveChangesAsync();
+
+                mensaje.Mensaje = "Horario eliminado!";
+
+                return Ok(mensaje);
             }
-
-            _context.Horarios.Remove(horario);
-            await _context.SaveChangesAsync();
-
-            return horario;
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+            
         }
 
         private bool HorarioExists(int id)

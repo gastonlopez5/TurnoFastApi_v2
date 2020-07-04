@@ -15,6 +15,5 @@ namespace TurnoFastApi.Models
         public Time HoraHastaTarde { get; set; }
         public int Frecuencia { get; set; }
         public int PrestacionId { get; set; }
-        public List<String> DiasLaborables { get; set; }
     }
 }
