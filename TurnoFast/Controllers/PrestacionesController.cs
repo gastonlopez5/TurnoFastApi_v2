@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TurnoFast.Models;
+using TurnoFastApi.Models;
 
 namespace TurnoFast.Controllers
 {
@@ -52,44 +53,55 @@ namespace TurnoFast.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Prestacion>> GetPrestacion(int id)
         {
-            var prestacion = await _context.Prestaciones.FindAsync(id);
+            try 
+            { 
+                var prestacion = await _context.Prestaciones.Include(x => x.Categoria).FirstOrDefaultAsync(x => x.Id == id);
 
-            if (prestacion == null)
+                if (prestacion == null)
+                {
+                    return BadRequest();
+                }
+
+                return prestacion;
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex);
             }
 
-            return prestacion;
         }
 
         // PUT: api/Servicios/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutServicio(int id, Prestacion prestacion)
+        [HttpPut]
+        public async Task<IActionResult> PutServicio([FromBody] Prestacion entidad)
         {
-            if (id != prestacion.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(prestacion).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PrestacionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                Prestacion prestacion = null;
+                Msj mensaje = new Msj();
 
-            return NoContent();
+                if (ModelState.IsValid && _context.Prestaciones.AsNoTracking().SingleOrDefault(e => e.Id == entidad.Id) != null)
+                {
+                    prestacion = _context.Prestaciones.SingleOrDefault(x => x.Id == entidad.Id);
+                    prestacion.Direccion = entidad.Direccion;
+                    prestacion.Nombre = entidad.Nombre;
+                    prestacion.Telefono = entidad.Telefono;
+                    prestacion.CategoriaId = entidad.CategoriaId;
+                    prestacion.Disponible = entidad.Disponible;
+
+                    _context.Prestaciones.Update(prestacion);
+                    _context.SaveChanges();
+
+                    mensaje.Mensaje = "Datos actualizados correctamente!";
+
+                    return Ok(mensaje);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         // POST: api/Servicios
@@ -115,16 +127,45 @@ namespace TurnoFast.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Prestacion>> DeleteServicio(int id)
         {
-            var prestacion = await _context.Prestaciones.FindAsync(id);
-            if (prestacion == null)
+            try
             {
-                return NotFound();
+                Msj mensaje = new Msj();
+
+                var prestacion = await _context.Prestaciones.FindAsync(id);
+
+                var horarios = _context.Horarios.Include(x => x.Turnos).Where(x => x.PrestacionId == id);
+
+                if (prestacion == null)
+                {
+                    mensaje.Mensaje = "No se encontró la prestacion!";
+                    return BadRequest(mensaje);
+                }
+
+                foreach(Horario h in horarios)
+                {
+                    if(h.Turnos.Count != 0)
+                    {
+                        mensaje.Mensaje = "Hay turnos asignados para esta prestacion!";
+                        return BadRequest(mensaje);
+                    }
+                }
+
+                foreach(Horario h in horarios)
+                {
+                    _context.Horarios.Remove(h);
+                }
+
+                mensaje.Mensaje = "Prestacion eliminada correctamente!";
+
+                _context.Prestaciones.Remove(prestacion);
+                await _context.SaveChangesAsync();
+
+                return Ok(mensaje);
             }
-
-            _context.Prestaciones.Remove(prestacion);
-            await _context.SaveChangesAsync();
-
-            return prestacion;
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         private bool PrestacionExists(int id)

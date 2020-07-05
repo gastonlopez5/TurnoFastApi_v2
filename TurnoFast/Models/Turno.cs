@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using TurnoFastApi.Models;
 
 namespace TurnoFast.Models
 {
@@ -20,14 +21,14 @@ namespace TurnoFast.Models
 
         public String ArchivoAdjunto { get; set; }
 
-        public int HorarioDisponibleId { get; set; }
+        public int HorarioId { get; set; }
 
         public int UsuarioId { get; set; }
 
         [ForeignKey("UsuarioId")]
         public Usuario Usuario { get; set; }
 
-        [ForeignKey("HorarioDisponibleId")]
-        public Prestacion HorarioDisponible { get; set; }
+        [ForeignKey("HorarioId")]
+        public Horario Horario { get; set; }
     }
 }
