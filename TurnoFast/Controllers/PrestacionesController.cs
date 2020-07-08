@@ -71,6 +71,27 @@ namespace TurnoFast.Controllers
 
         }
 
+        [HttpGet("disponibles/{categoriaid}")]
+        public async Task<ActionResult<IEnumerable<Prestacion>>> GetPrestacionesDisponibles(int categoriaid)
+        {
+            try
+            {
+                var prestaciones = await _context.Prestaciones.Where(x => x.CategoriaId == categoriaid).ToListAsync();
+
+                if (prestaciones == null)
+                {
+                    return BadRequest();
+                }
+
+                return prestaciones;
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
         // PUT: api/Servicios/5
         [HttpPut]
         public async Task<IActionResult> PutServicio([FromBody] Prestacion entidad)
