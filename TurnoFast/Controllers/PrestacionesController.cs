@@ -76,9 +76,9 @@ namespace TurnoFast.Controllers
         {
             try
             {
-                var prestaciones = await _context.Prestaciones.Where(x => x.CategoriaId == categoriaid).ToListAsync();
+                var prestaciones = await _context.Prestaciones.Include(a => a.Profesional).Where(x => x.CategoriaId == categoriaid && x.Profesional.Email != User.Identity.Name).ToListAsync();
 
-                if (prestaciones == null)
+                if (prestaciones.Count == 0)
                 {
                     return BadRequest();
                 }
