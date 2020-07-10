@@ -13,13 +13,9 @@ namespace TurnoFast.Models
         [Key]
         public int Id { get; set; }
         
-        public DateTime Fecha { get; set; }
+        public String Fecha { get; set; }
         
         public DateTime Hora { get; set; }
-
-        public String Observaciones { get; set; }
-
-        public String ArchivoAdjunto { get; set; }
 
         public int HorarioId { get; set; }
 
