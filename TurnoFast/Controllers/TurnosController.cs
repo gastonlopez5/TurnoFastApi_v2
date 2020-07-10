@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TurnoFast.Models;
@@ -36,17 +37,73 @@ namespace TurnoFastApi.Controllers
         {
             try
             {
-                List<Turno> listaTurnos = new List<Turno>();
-                Turno turno = null;
+                List<Turno2> listaTurnos = new List<Turno2>();
+                Turno2 turno2 = null;
+                bool bandera = true;
+                DateTime hora = new DateTime();
 
                 var horarioPrestacion = await _context.Horarios.Include(x => x.Turnos).FirstOrDefaultAsync(x => x.PrestacionId == prestacionid && x.DiaSemana == nrodia);
-                DateTime hora = horarioPrestacion.HoraDesdeManiana;
-                while(hora <= horarioPrestacion.HoraHastaManiana)
+                if(horarioPrestacion != null)
                 {
+                    var turnos = horarioPrestacion.Turnos;
+                    hora = horarioPrestacion.HoraDesdeManiana;
+                    if (hora.Date != DateTime.MaxValue.Date)
+                    {
+                        while (hora <= horarioPrestacion.HoraHastaManiana)
+                        {
+                            turno2 = new Turno2();
+                            for (int i = 0; i < turnos.Count; i++)
+                            {
+                                if (turnos[i].Fecha == fecha && turnos[i].Hora == hora)
+                                {
+                                    bandera = false;
+                                }
+                            }
+                            if (bandera)
+                            {
+                                turno2.HorarioId = horarioPrestacion.Id;
+                                turno2.Fecha = fecha;
+                                turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
 
+                                listaTurnos.Add(turno2);
+                            }
+                            hora.AddMinutes(horarioPrestacion.Frecuencia);
+                        }
+                    }
+
+                    hora = horarioPrestacion.HoraDesdeTarde;
+                    bandera = true;
+                    if (hora.Date != DateTime.MaxValue.Date)
+                    {
+                        while (hora.TimeOfDay <= horarioPrestacion.HoraHastaTarde.TimeOfDay)
+                        {
+                            turno2 = new Turno2();
+                            for (int i = 0; i < turnos.Count; i++)
+                            {
+                                if (turnos[i].Fecha == fecha && turnos[i].Hora == hora)
+                                {
+                                    bandera = false;
+                                }
+                            }
+                            if (bandera)
+                            {
+                                turno2.HorarioId = horarioPrestacion.Id;
+                                turno2.Fecha = fecha;
+                                turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
+
+                                listaTurnos.Add(turno2);
+                            }
+                            hora = hora.AddMinutes(horarioPrestacion.Frecuencia);
+                        }
+                    }
+
+                    return Ok(listaTurnos);
                 }
-
-                return await _context.Turnos.ToListAsync();
+                else
+                {
+                    return BadRequest();
+                }
+                
             }
             catch (Exception ex)
             {
