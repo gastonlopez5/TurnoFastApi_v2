@@ -93,6 +93,10 @@ namespace TurnoFastApi.Controllers
 
                                 listaTurnos.Add(turno2);
                             }
+                            else
+                            {
+                                bandera = true;
+                            }
                             hora = hora.AddMinutes(horarioPrestacion.Frecuencia);
                         }
                     }
@@ -103,7 +107,6 @@ namespace TurnoFastApi.Controllers
                 {
                     return BadRequest();
                 }
-                
             }
             catch (Exception ex)
             {
@@ -157,12 +160,30 @@ namespace TurnoFastApi.Controllers
 
         // POST: api/Turnos
         [HttpPost]
-        public async Task<ActionResult<Turno>> PostTurno(Turno turno)
+        public async Task<ActionResult<Turno>> PostTurno(Turno2 turno2)
         {
-            _context.Turnos.Add(turno);
-            await _context.SaveChangesAsync();
+            try
+            {
+                Turno turno = new Turno();
+                Msj msj = new Msj();
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
 
-            return CreatedAtAction("GetTurno", new { id = turno.Id }, turno);
+                turno.Fecha = turno2.Fecha;
+                turno.Hora = DateTime.Parse(turno2.Hora.hour + ":" + turno2.Hora.minute);
+                turno.HorarioId = turno2.HorarioId;
+                turno.UsuarioId = usuario.Id;
+
+                _context.Turnos.Add(turno);
+                await _context.SaveChangesAsync();
+
+                msj.Mensaje = "Datos guardados correctamente!";
+
+                return Ok(msj);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         // DELETE: api/Turnos/5
