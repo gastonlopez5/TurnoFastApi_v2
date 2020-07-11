@@ -114,6 +114,49 @@ namespace TurnoFastApi.Controllers
             }
         }
 
+        [HttpGet("{mes}/{anio}")]
+        public async Task<ActionResult<IEnumerable<Turno>>> GetTurnosPorMes(String mes, String anio)
+        {
+            try
+            {
+                List<Turno2> listaTurnos = new List<Turno2>();
+                Turno2 turno2 = null;
+
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
+                var turnos = _context.Turnos.Where(x => x.UsuarioId == usuario.Id);
+
+                if(turnos != null)
+                {
+                    foreach (Turno turno in turnos)
+                    {
+                        String[] separados = turno.Fecha.Split("-");
+                        String year = separados[0];
+                        String month = separados[1];
+
+                        if (month == mes && year == anio)
+                        {
+                            turno2 = new Turno2();
+                            turno2.HorarioId = turno.HorarioId;
+                            turno2.Fecha = turno.Fecha;
+                            turno2.Hora = new Time(turno.Hora.Hour, turno.Hora.Minute, 0, 0);
+                            turno2.UsuarioId = usuario.Id;
+
+                            listaTurnos.Add(turno2);
+                        }
+                    }
+                    return Ok(listaTurnos);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
         // GET: api/Turnos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Turno>> GetTurno(int id)
