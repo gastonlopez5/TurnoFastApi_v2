@@ -114,7 +114,7 @@ namespace TurnoFastApi.Controllers
             }
         }
 
-        [HttpGet("{mes}/{anio}")]
+        [HttpGet("pormes/{mes}/{anio}")]
         public async Task<ActionResult<IEnumerable<Turno>>> GetTurnosPorMes(String mes, String anio)
         {
             try
@@ -150,6 +150,52 @@ namespace TurnoFastApi.Controllers
                 {
                     return BadRequest();
                 }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("pordia/{horarioid}/{fecha}")]
+        public async Task<ActionResult<Horario2>> GetTurnosPorDia(int horarioid, String fecha)
+        {
+            try
+            {
+                Horario horario = _context.Horarios.Include(x => x.Turnos).Include(x => x.Prestacion).FirstOrDefault(x => x.Id == horarioid);
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
+                var turnos = horario.Turnos;
+                List<Turno2> listaTurnos = new List<Turno2>();
+                Turno2 turno2 = null;
+                Horario2 horario2 = null;
+
+                if(turnos != null)
+                {
+                    foreach (Turno turno in turnos)
+                    {
+                        if(turno.Fecha == fecha)
+                        {
+                            turno2 = new Turno2();
+                            turno2.HorarioId = turno.HorarioId;
+                            turno2.Fecha = turno.Fecha;
+                            turno2.Hora = new Time(turno.Hora.Hour, turno.Hora.Minute, 0, 0);
+                            turno2.UsuarioId = usuario.Id;
+
+                            listaTurnos.Add(turno2);
+                        }
+                    }
+
+                    horario2 = new Horario2();
+                    horario2.Prestacion = horario.Prestacion;
+                    horario2.Turnos = listaTurnos;
+
+                    return Ok(horario2);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+                
             }
             catch (Exception ex)
             {
