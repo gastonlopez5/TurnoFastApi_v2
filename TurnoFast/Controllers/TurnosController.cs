@@ -178,6 +178,7 @@ namespace TurnoFastApi.Controllers
                         if(turno.Fecha == fecha)
                         {
                             turno2 = new Turno2();
+                            turno2.Id = turno.Id;
                             turno2.Fecha = turno.Fecha;
                             Horario2 horario2 = new Horario2
                             {
@@ -191,7 +192,14 @@ namespace TurnoFastApi.Controllers
                         }
                     }
 
-                    return Ok(listaTurnos);
+                    if (listaTurnos.Count != 0)
+                    {
+                        return Ok(listaTurnos);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
                 }
                 else
                 {
@@ -281,16 +289,27 @@ namespace TurnoFastApi.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Turno>> DeleteTurno(int id)
         {
-            var turno = await _context.Turnos.FindAsync(id);
-            if (turno == null)
+            try
             {
-                return NotFound();
+                var turno = await _context.Turnos.FindAsync(id);
+                Msj mensaje = new Msj();
+
+                if (turno == null)
+                {
+                    return BadRequest();
+                }
+
+                _context.Turnos.Remove(turno);
+                await _context.SaveChangesAsync();
+
+                mensaje.Mensaje = "Turno cancelado!";
+
+                return Ok(mensaje);
             }
-
-            _context.Turnos.Remove(turno);
-            await _context.SaveChangesAsync();
-
-            return turno;
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         private bool TurnoExists(int id)
