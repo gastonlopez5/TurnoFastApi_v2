@@ -157,17 +157,19 @@ namespace TurnoFastApi.Controllers
             }
         }
 
-        [HttpGet("pordia/{horarioid}/{fecha}")]
-        public async Task<ActionResult<Horario2>> GetTurnosPorDia(int horarioid, String fecha)
+        [HttpGet("pordia/{fecha}")]
+        public async Task<ActionResult<IEnumerable<Turno2>>> GetTurnosPorDia(String fecha)
         {
             try
             {
-                Horario horario = _context.Horarios.Include(x => x.Turnos).Include(x => x.Prestacion).FirstOrDefault(x => x.Id == horarioid);
                 var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
-                var turnos = horario.Turnos;
+                var turnos = _context.Turnos
+                    .Include(x => x.Horario)
+                    .ThenInclude(y => y.Prestacion)
+                    .Where(x => x.UsuarioId == usuario.Id);
+                
                 List<Turno2> listaTurnos = new List<Turno2>();
                 Turno2 turno2 = null;
-                Horario2 horario2 = null;
 
                 if(turnos != null)
                 {
@@ -176,8 +178,12 @@ namespace TurnoFastApi.Controllers
                         if(turno.Fecha == fecha)
                         {
                             turno2 = new Turno2();
-                            turno2.HorarioId = turno.HorarioId;
                             turno2.Fecha = turno.Fecha;
+                            Horario2 horario2 = new Horario2
+                            {
+                                Prestacion = turno.Horario.Prestacion
+                            };
+                            turno2.Horario2 = horario2;
                             turno2.Hora = new Time(turno.Hora.Hour, turno.Hora.Minute, 0, 0);
                             turno2.UsuarioId = usuario.Id;
 
@@ -185,11 +191,7 @@ namespace TurnoFastApi.Controllers
                         }
                     }
 
-                    horario2 = new Horario2();
-                    horario2.Prestacion = horario.Prestacion;
-                    horario2.Turnos = listaTurnos;
-
-                    return Ok(horario2);
+                    return Ok(listaTurnos);
                 }
                 else
                 {

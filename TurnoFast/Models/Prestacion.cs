@@ -32,8 +32,5 @@ namespace TurnoFast.Models
 
         [ForeignKey("CategoriaId")]
         public Categoria Categoria { get; set; }
-
-        public List<Horario> Horarios { get; set; }
-
     }
 }
