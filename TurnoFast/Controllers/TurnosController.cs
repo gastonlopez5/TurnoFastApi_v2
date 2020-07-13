@@ -40,7 +40,10 @@ namespace TurnoFastApi.Controllers
                 bool bandera = true;
                 DateTime hora = new DateTime();
 
-                var horarioPrestacion = await _context.Horarios.Include(x => x.Turnos).FirstOrDefaultAsync(x => x.PrestacionId == prestacionid && x.DiaSemana == nrodia);
+                var horarioPrestacion = await _context.Horarios
+                    .Include(x => x.Turnos)
+                    .FirstOrDefaultAsync(x => x.PrestacionId == prestacionid && x.DiaSemana == nrodia);
+
                 if (horarioPrestacion != null)
                 {
                     var turnos = horarioPrestacion.Turnos;
