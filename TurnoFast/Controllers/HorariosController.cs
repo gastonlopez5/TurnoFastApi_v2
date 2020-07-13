@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using TurnoFast.Models;
 using TurnoFastApi.Models;
 
@@ -73,7 +72,7 @@ namespace TurnoFastApi.Controllers
             {
                 return BadRequest(ex);
             }
-            
+
         }
 
         // PUT: api/Horarios/5
@@ -112,7 +111,7 @@ namespace TurnoFastApi.Controllers
                         horario.HoraDesdeTarde = DateTime.MaxValue;
                         horario.HoraHastaTarde = DateTime.MaxValue;
                     }
-                    
+
                     _context.Horarios.Update(horario);
                     _context.SaveChanges();
 
@@ -126,7 +125,7 @@ namespace TurnoFastApi.Controllers
             {
                 return BadRequest(ex);
             }
-        
+
         }
 
         // POST: api/Horarios
@@ -138,7 +137,7 @@ namespace TurnoFastApi.Controllers
                 Horario horario = new Horario();
                 Msj msj = new Msj();
 
-                if(horario2.HoraDesdeManiana != null)
+                if (horario2.HoraDesdeManiana != null)
                 {
                     horario.HoraDesdeManiana = DateTime.Parse(horario2.HoraDesdeManiana.hour + ":" + horario2.HoraDesdeManiana.minute);
                     horario.HoraHastaManiana = DateTime.Parse(horario2.HoraHastaManiana.hour + ":" + horario2.HoraHastaManiana.minute);
@@ -175,7 +174,7 @@ namespace TurnoFastApi.Controllers
             {
                 return BadRequest(ex);
             }
-            
+
         }
 
         // DELETE: api/Horarios/5
@@ -186,7 +185,7 @@ namespace TurnoFastApi.Controllers
             {
                 Msj mensaje = new Msj();
                 var horario = await _context.Horarios.Where(x => x.PrestacionId == id && x.DiaSemana == nrodia).FirstOrDefaultAsync(); ;
-                
+
                 if (horario == null)
                 {
                     return BadRequest();
@@ -203,7 +202,7 @@ namespace TurnoFastApi.Controllers
             {
                 return BadRequest(ex);
             }
-            
+
         }
 
         private bool HorarioExists(int id)

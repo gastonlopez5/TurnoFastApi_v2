@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
+using TurnoFast.Models;
 
 namespace TurnoFastApi.Models
 {
@@ -22,5 +20,8 @@ namespace TurnoFastApi.Models
 
         [ForeignKey("HorarioId")]
         public Horario2 Horario2 { get; set; }
+
+        [ForeignKey("UsuarioId")]
+        public Usuario Usuario { get; set; }
     }
 }

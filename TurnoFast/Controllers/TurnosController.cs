@@ -1,15 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using TurnoFast.Models;
 using TurnoFastApi.Models;
 
@@ -33,7 +31,7 @@ namespace TurnoFastApi.Controllers
 
         // GET: api/Turnos
         [HttpGet("{prestacionid}/{nrodia}/{fecha}")]
-        public async Task<ActionResult<IEnumerable<Turno>>> GetTurnos(int prestacionid, int nrodia, String fecha)
+        public async Task<ActionResult<IEnumerable<Turno2>>> GetTurnos(int prestacionid, int nrodia, String fecha)
         {
             try
             {
@@ -43,7 +41,7 @@ namespace TurnoFastApi.Controllers
                 DateTime hora = new DateTime();
 
                 var horarioPrestacion = await _context.Horarios.Include(x => x.Turnos).FirstOrDefaultAsync(x => x.PrestacionId == prestacionid && x.DiaSemana == nrodia);
-                if(horarioPrestacion != null)
+                if (horarioPrestacion != null)
                 {
                     var turnos = horarioPrestacion.Turnos;
                     hora = horarioPrestacion.HoraDesdeManiana;
@@ -67,7 +65,7 @@ namespace TurnoFastApi.Controllers
 
                                 listaTurnos.Add(turno2);
                             }
-                            hora.AddMinutes(horarioPrestacion.Frecuencia);
+                            hora = hora.AddMinutes(horarioPrestacion.Frecuencia);
                         }
                     }
 
@@ -115,7 +113,7 @@ namespace TurnoFastApi.Controllers
         }
 
         [HttpGet("pormes/{mes}/{anio}")]
-        public async Task<ActionResult<IEnumerable<Turno>>> GetTurnosPorMes(String mes, String anio)
+        public async Task<ActionResult<IEnumerable<Turno2>>> GetTurnosPorMes(String mes, String anio)
         {
             try
             {
@@ -125,7 +123,50 @@ namespace TurnoFastApi.Controllers
                 var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
                 var turnos = _context.Turnos.Where(x => x.UsuarioId == usuario.Id);
 
-                if(turnos != null)
+                if (turnos != null)
+                {
+                    foreach (Turno turno in turnos)
+                    {
+                        String[] separados = turno.Fecha.Split("-");
+                        String year = separados[0];
+                        String month = separados[1];
+
+                        if (month == mes && year == anio)
+                        {
+                            turno2 = new Turno2();
+                            turno2.HorarioId = turno.HorarioId;
+                            turno2.Fecha = turno.Fecha;
+                            turno2.Hora = new Time(turno.Hora.Hour, turno.Hora.Minute, 0, 0);
+                            turno2.UsuarioId = usuario.Id;
+
+                            listaTurnos.Add(turno2);
+                        }
+                    }
+                    return Ok(listaTurnos);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("solicitadospormes/{mes}/{anio}")]
+        public async Task<ActionResult<IEnumerable<Turno2>>> GetTurnosSolicitadosPorMes(String mes, String anio)
+        {
+            try
+            {
+                List<Turno2> listaTurnos = new List<Turno2>();
+                Turno2 turno2 = null;
+
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
+                var turnos = _context.Turnos.Where(x => x.UsuarioId != usuario.Id);
+
+                if (turnos != null)
                 {
                     foreach (Turno turno in turnos)
                     {
@@ -167,15 +208,15 @@ namespace TurnoFastApi.Controllers
                     .Include(x => x.Horario)
                     .ThenInclude(y => y.Prestacion)
                     .Where(x => x.UsuarioId == usuario.Id);
-                
+
                 List<Turno2> listaTurnos = new List<Turno2>();
                 Turno2 turno2 = null;
 
-                if(turnos != null)
+                if (turnos != null)
                 {
                     foreach (Turno turno in turnos)
                     {
-                        if(turno.Fecha == fecha)
+                        if (turno.Fecha == fecha)
                         {
                             turno2 = new Turno2();
                             turno2.Id = turno.Id;
@@ -205,7 +246,64 @@ namespace TurnoFastApi.Controllers
                 {
                     return BadRequest();
                 }
-                
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("solicitadospordia/{fecha}")]
+        public async Task<ActionResult<IEnumerable<Turno2>>> GetTurnosSolicitadosPorDia(String fecha)
+        {
+            try
+            {
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
+                var turnos = _context.Turnos
+                    .Include(x => x.Horario)
+                    .ThenInclude(y => y.Prestacion)
+                    .Include(x => x.Usuario)
+                    .Where(x => x.UsuarioId != usuario.Id);
+
+                List<Turno2> listaTurnos = new List<Turno2>();
+                Turno2 turno2 = null;
+
+                if (turnos != null)
+                {
+                    foreach (Turno turno in turnos)
+                    {
+                        if (turno.Fecha == fecha)
+                        {
+                            turno2 = new Turno2();
+                            turno2.Id = turno.Id;
+                            turno2.Fecha = turno.Fecha;
+                            Horario2 horario2 = new Horario2
+                            {
+                                Prestacion = turno.Horario.Prestacion
+                            };
+                            turno2.Horario2 = horario2;
+                            turno2.Hora = new Time(turno.Hora.Hour, turno.Hora.Minute, 0, 0);
+                            turno2.Usuario = turno.Usuario;
+
+                            listaTurnos.Add(turno2);
+                        }
+                    }
+
+                    if (listaTurnos.Count != 0)
+                    {
+                        return Ok(listaTurnos);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
             }
             catch (Exception ex)
             {

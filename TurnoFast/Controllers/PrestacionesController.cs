@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using TurnoFast.Models;
 using TurnoFastApi.Models;
 
@@ -46,15 +45,15 @@ namespace TurnoFast.Controllers
             {
                 return BadRequest(ex);
             }
-            
+
         }
 
         // GET: api/Servicios/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Prestacion>> GetPrestacion(int id)
         {
-            try 
-            { 
+            try
+            {
                 var prestacion = await _context.Prestaciones.Include(x => x.Categoria).FirstOrDefaultAsync(x => x.Id == id);
 
                 if (prestacion == null)
@@ -129,10 +128,10 @@ namespace TurnoFast.Controllers
         [HttpPost]
         public async Task<ActionResult<Prestacion>> PostPrestacion(Prestacion prestacion)
         {
-            
+
             try
             {
-                prestacion.ProfesionalId = _context.Usuarios.FirstOrDefault(x => x.Email == User.Identity.Name).Id;   
+                prestacion.ProfesionalId = _context.Usuarios.FirstOrDefault(x => x.Email == User.Identity.Name).Id;
                 _context.Prestaciones.Add(prestacion);
                 await _context.SaveChangesAsync();
 
@@ -162,16 +161,16 @@ namespace TurnoFast.Controllers
                     return BadRequest(mensaje);
                 }
 
-                foreach(Horario h in horarios)
+                foreach (Horario h in horarios)
                 {
-                    if(h.Turnos.Count != 0)
+                    if (h.Turnos.Count != 0)
                     {
                         mensaje.Mensaje = "Hay turnos asignados para esta prestacion!";
                         return BadRequest(mensaje);
                     }
                 }
 
-                foreach(Horario h in horarios)
+                foreach (Horario h in horarios)
                 {
                     _context.Horarios.Remove(h);
                 }
