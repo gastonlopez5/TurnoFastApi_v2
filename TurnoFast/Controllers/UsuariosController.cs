@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -167,6 +168,29 @@ namespace TurnoFast.Controllers
 
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
+
+                var user = _context.Usuarios.FirstOrDefault(x => x.Email == usuario.Email);
+                var fileName = "fotoperfil.png";
+                string wwwPath = environment.WebRootPath;
+                string path = wwwPath + "/fotoperfil/" + user.Id;
+                string filePath = "/fotoperfil/" + user.Id + "/"+ fileName;
+                string pathFull = Path.Combine(path, fileName);
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                using (var fileStream = new FileStream(pathFull, FileMode.Create))
+                {
+                    var bytes = Convert.FromBase64String(usuario.FotoPerfil);
+                    fileStream.Write(bytes, 0, bytes.Length);
+                    fileStream.Flush();
+                    user.FotoPerfil = filePath;
+                }
+
+                _context.Usuarios.Update(user);
+                _context.SaveChanges();
 
                 return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
             }
