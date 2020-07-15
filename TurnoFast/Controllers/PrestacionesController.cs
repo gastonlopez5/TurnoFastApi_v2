@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TurnoFast.Models;
@@ -136,6 +137,32 @@ namespace TurnoFast.Controllers
                 prestacion.ProfesionalId = _context.Usuarios.FirstOrDefault(x => x.Email == User.Identity.Name).Id;
                 _context.Prestaciones.Add(prestacion);
                 await _context.SaveChangesAsync();
+
+                if (prestacion.Logo != null)
+                {
+                    var prestation = _context.Prestaciones.Last();
+                    var fileName = "logo.png";
+                    string wwwPath = environment.WebRootPath;
+                    string path = wwwPath + "/logo/" + prestation.Id;
+                    string filePath = "/logo/" + prestation.Id + "/" + fileName;
+                    string pathFull = Path.Combine(path, fileName);
+
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    using (var fileStream = new FileStream(pathFull, FileMode.Create))
+                    {
+                        var bytes = Convert.FromBase64String(prestacion.Logo);
+                        fileStream.Write(bytes, 0, bytes.Length);
+                        fileStream.Flush();
+                        prestation.Logo = filePath;
+                    }
+
+                    _context.Prestaciones.Update(prestation);
+                    _context.SaveChanges();
+                }
 
                 return CreatedAtAction("GetPrestacion", new { id = prestacion.Id }, prestacion);
             }
