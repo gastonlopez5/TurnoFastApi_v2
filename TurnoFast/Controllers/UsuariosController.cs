@@ -135,10 +135,54 @@ namespace TurnoFast.Controllers
                     usuario.Email = entidad.Email;
                     usuario.Telefono = entidad.Telefono;
                     usuario.Estado = entidad.Estado;
-                    usuario.Clave = entidad.Clave;
+                    if(entidad.Clave.Length != 0)
+                    {
+                        usuario.Clave = entidad.Clave;
+                    }
+                    
                     _context.Usuarios.Update(usuario);
-
                     _context.SaveChanges();
+
+                    if(entidad.FotoPerfil.Length != 0)
+                    {
+                        if(usuario.FotoPerfil != null)
+                        {
+                            string wwwPath = environment.WebRootPath;
+                            string fullPath = wwwPath + usuario.FotoPerfil;
+                            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                            {
+                                var bytes = Convert.FromBase64String(entidad.FotoPerfil);
+                                fileStream.Write(bytes, 0, bytes.Length);
+                                fileStream.Flush();
+                            }
+                        }
+                        else
+                        {
+                            var fileName = "fotoperfil.png";
+                            string wwwPath = environment.WebRootPath;
+                            string path = wwwPath + "/fotoperfil/" + usuario.Id;
+                            string filePath = "/fotoperfil/" + usuario.Id + "/" + fileName;
+                            string pathFull = Path.Combine(path, fileName);
+
+                            if (!Directory.Exists(path))
+                            {
+                                Directory.CreateDirectory(path);
+                            }
+
+                            using (var fileStream = new FileStream(pathFull, FileMode.Create))
+                            {
+                                var bytes = Convert.FromBase64String(entidad.FotoPerfil);
+                                fileStream.Write(bytes, 0, bytes.Length);
+                                fileStream.Flush();
+                                usuario.FotoPerfil = filePath;
+                            }
+
+                            _context.Usuarios.Update(usuario);
+                            _context.SaveChanges();
+                        }
+                        
+                    }
+
                     return Ok(entidad);
                 }
                 return BadRequest();
@@ -169,28 +213,31 @@ namespace TurnoFast.Controllers
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
 
-                var user = _context.Usuarios.FirstOrDefault(x => x.Email == usuario.Email);
-                var fileName = "fotoperfil.png";
-                string wwwPath = environment.WebRootPath;
-                string path = wwwPath + "/fotoperfil/" + user.Id;
-                string filePath = "/fotoperfil/" + user.Id + "/"+ fileName;
-                string pathFull = Path.Combine(path, fileName);
-
-                if (!Directory.Exists(path))
+                if(usuario.FotoPerfil != null)
                 {
-                    Directory.CreateDirectory(path);
-                }
+                    var user = _context.Usuarios.FirstOrDefault(x => x.Email == usuario.Email);
+                    var fileName = "fotoperfil.png";
+                    string wwwPath = environment.WebRootPath;
+                    string path = wwwPath + "/fotoperfil/" + user.Id;
+                    string filePath = "/fotoperfil/" + user.Id + "/" + fileName;
+                    string pathFull = Path.Combine(path, fileName);
 
-                using (var fileStream = new FileStream(pathFull, FileMode.Create))
-                {
-                    var bytes = Convert.FromBase64String(usuario.FotoPerfil);
-                    fileStream.Write(bytes, 0, bytes.Length);
-                    fileStream.Flush();
-                    user.FotoPerfil = filePath;
-                }
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
 
-                _context.Usuarios.Update(user);
-                _context.SaveChanges();
+                    using (var fileStream = new FileStream(pathFull, FileMode.Create))
+                    {
+                        var bytes = Convert.FromBase64String(usuario.FotoPerfil);
+                        fileStream.Write(bytes, 0, bytes.Length);
+                        fileStream.Flush();
+                        user.FotoPerfil = filePath;
+                    }
+
+                    _context.Usuarios.Update(user);
+                    _context.SaveChanges();
+                }
 
                 return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
             }
