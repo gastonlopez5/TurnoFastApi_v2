@@ -115,6 +115,45 @@ namespace TurnoFast.Controllers
                     _context.Prestaciones.Update(prestacion);
                     _context.SaveChanges();
 
+                    if(entidad.Logo != null)
+                    {
+                        if(prestacion.Logo != null) 
+                        {
+                            string wwwPath = environment.WebRootPath;
+                            string fullPath = wwwPath + prestacion.Logo;
+                            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                            {
+                                var bytes = Convert.FromBase64String(entidad.Logo);
+                                fileStream.Write(bytes, 0, bytes.Length);
+                                fileStream.Flush();
+                            }
+                        }
+                        else
+                        {
+                            var fileName = "logo.png";
+                            string wwwPath = environment.WebRootPath;
+                            string path = wwwPath + "/logo/" + prestacion.Id;
+                            string filePath = "/logo/" + prestacion.Id + "/" + fileName;
+                            string pathFull = Path.Combine(path, fileName);
+
+                            if (!Directory.Exists(path))
+                            {
+                                Directory.CreateDirectory(path);
+                            }
+
+                            using (var fileStream = new FileStream(pathFull, FileMode.Create))
+                            {
+                                var bytes = Convert.FromBase64String(entidad.Logo);
+                                fileStream.Write(bytes, 0, bytes.Length);
+                                fileStream.Flush();
+                                prestacion.Logo = filePath;
+                            }
+
+                            _context.Prestaciones.Update(prestacion);
+                            _context.SaveChanges();
+                        }
+                    }
+
                     mensaje.Mensaje = "Datos actualizados correctamente!";
 
                     return Ok(mensaje);
@@ -203,6 +242,10 @@ namespace TurnoFast.Controllers
                 {
                     _context.Horarios.Remove(h);
                 }
+
+                string wwwPath = environment.WebRootPath;
+                string fullPath = wwwPath + prestacion.Logo;
+                System.IO.File.Delete(fullPath);
 
                 mensaje.Mensaje = "Prestacion eliminada correctamente!";
 

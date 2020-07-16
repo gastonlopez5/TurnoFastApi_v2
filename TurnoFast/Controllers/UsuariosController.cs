@@ -143,7 +143,7 @@ namespace TurnoFast.Controllers
                     _context.Usuarios.Update(usuario);
                     _context.SaveChanges();
 
-                    if(entidad.FotoPerfil.Length != 0)
+                    if(entidad.FotoPerfil != null)
                     {
                         if(usuario.FotoPerfil != null)
                         {
