@@ -167,7 +167,7 @@ namespace TurnoFastApi.Controllers
                 Turno2 turno2 = null;
 
                 var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
-                var turnos = _context.Turnos.Where(x => x.UsuarioId != usuario.Id);
+                var turnos = _context.Turnos.Where(x => x.Horario.Prestacion.ProfesionalId == usuario.Id);
 
                 if (turnos != null)
                 {
