@@ -49,6 +49,23 @@ namespace TurnoFast.Controllers
 
         }
 
+        [HttpGet("todas")]
+        public async Task<ActionResult<IEnumerable<Prestacion>>> GetAllPrestaciones()
+        {
+            try
+            {
+                return await _context.Prestaciones
+                    .Include(x => x.Profesional)
+                    .Include(a => a.Categoria)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+
+        }
+
         // GET: api/Servicios/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Prestacion>> GetPrestacion(int id)
