@@ -243,15 +243,15 @@ namespace TurnoFast.Controllers
                 if (prestacion == null)
                 {
                     mensaje.Mensaje = "No se encontró la prestacion!";
-                    return BadRequest(mensaje);
+                    return Ok(mensaje);
                 }
 
                 foreach (Horario h in horarios)
                 {
-                    if (h.Turnos.Count != 0)
+                    if (h.Turnos.Count != 0 && h.Turnos.Any(x => DateTime.Parse(x.Fecha) >= DateTime.Now.Date))
                     {
                         mensaje.Mensaje = "Hay turnos asignados para esta prestacion!";
-                        return BadRequest(mensaje);
+                        return Ok(mensaje);
                     }
                 }
 
