@@ -201,6 +201,50 @@ namespace TurnoFastApi.Controllers
             }
         }
 
+        [HttpGet("todos")]
+        public async Task<ActionResult<IEnumerable<Turno2>>> GetTurnosSolicitadosPorProfesional()
+        {
+            try
+            {
+                List<Turno2> listaTurnos = new List<Turno2>();
+                Turno2 turno2 = null;
+
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(x => x.Email == User.Identity.Name);
+                var turnos = _context.Turnos
+                    .Include(x => x.Horario)
+                    .ThenInclude(y => y.Prestacion)
+                    .Where(x => x.Horario.Prestacion.ProfesionalId == usuario.Id);
+
+                if (turnos != null)
+                {
+                    foreach (Turno turno in turnos)
+                    {
+                        turno2 = new Turno2();
+                        turno2.Id = turno.Id;
+                        turno2.Fecha = turno.Fecha;
+                        Horario2 horario2 = new Horario2
+                        {
+                            Prestacion = turno.Horario.Prestacion
+                        };
+                        turno2.Horario2 = horario2;
+                        turno2.Hora = new Time(turno.Hora.Hour, turno.Hora.Minute, 0, 0);
+                        turno2.UsuarioId = usuario.Id;
+
+                        listaTurnos.Add(turno2);
+                    }
+                    return Ok(listaTurnos);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
         [HttpGet("pordia/{fecha}")]
         public async Task<ActionResult<IEnumerable<Turno2>>> GetTurnosPorDia(String fecha)
         {
