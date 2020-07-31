@@ -55,7 +55,7 @@ namespace TurnoFastApi.Controllers
                             turno2 = new Turno2();
                             for (int i = 0; i < turnos.Count; i++)
                             {
-                                if (turnos[i].Fecha == fecha && turnos[i].Hora == hora)
+                                if (turnos[i].Fecha == fecha && turnos[i].Hora.TimeOfDay == hora.TimeOfDay)
                                 {
                                     bandera = false;
                                 }
@@ -67,6 +67,10 @@ namespace TurnoFastApi.Controllers
                                 turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
 
                                 listaTurnos.Add(turno2);
+                            }
+                            else
+                            {
+                                bandera = true;
                             }
                             hora = hora.AddMinutes(horarioPrestacion.Frecuencia);
                         }
@@ -81,7 +85,7 @@ namespace TurnoFastApi.Controllers
                             turno2 = new Turno2();
                             for (int i = 0; i < turnos.Count; i++)
                             {
-                                if (turnos[i].Fecha == fecha && turnos[i].Hora == hora)
+                                if (turnos[i].Fecha == fecha && turnos[i].Hora.TimeOfDay == hora.TimeOfDay)
                                 {
                                     bandera = false;
                                 }
