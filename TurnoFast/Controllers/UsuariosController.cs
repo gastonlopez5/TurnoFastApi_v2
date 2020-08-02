@@ -14,6 +14,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TurnoFast.Models;
+using TurnoFastApi.Models;
 
 namespace TurnoFast.Controllers
 {
@@ -200,46 +201,57 @@ namespace TurnoFast.Controllers
         {
             try
             {
-                string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                Msj msj = new Msj();
+
+                if (_context.Usuarios.Any(x => x.Email == usuario.Email))
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                     password: usuario.Clave,
                     salt: System.Text.Encoding.ASCII.GetBytes("Salt"),
                     prf: KeyDerivationPrf.HMACSHA1,
                     iterationCount: 1000,
                     numBytesRequested: 256 / 8));
 
-                usuario.Estado = true;
-                usuario.Clave = hashed;
+                    usuario.Estado = true;
+                    usuario.Clave = hashed;
 
-                _context.Usuarios.Add(usuario);
-                await _context.SaveChangesAsync();
+                    _context.Usuarios.Add(usuario);
+                    await _context.SaveChangesAsync();
 
-                if(usuario.FotoPerfil != null)
-                {
-                    var user = _context.Usuarios.FirstOrDefault(x => x.Email == usuario.Email);
-                    var fileName = "fotoperfil.png";
-                    string wwwPath = environment.WebRootPath;
-                    string path = wwwPath + "/fotoperfil/" + user.Id;
-                    string filePath = "/fotoperfil/" + user.Id + "/" + fileName;
-                    string pathFull = Path.Combine(path, fileName);
-
-                    if (!Directory.Exists(path))
+                    if (usuario.FotoPerfil != null)
                     {
-                        Directory.CreateDirectory(path);
+                        var user = _context.Usuarios.FirstOrDefault(x => x.Email == usuario.Email);
+                        var fileName = "fotoperfil.png";
+                        string wwwPath = environment.WebRootPath;
+                        string path = wwwPath + "/fotoperfil/" + user.Id;
+                        string filePath = "/fotoperfil/" + user.Id + "/" + fileName;
+                        string pathFull = Path.Combine(path, fileName);
+
+                        if (!Directory.Exists(path))
+                        {
+                            Directory.CreateDirectory(path);
+                        }
+
+                        using (var fileStream = new FileStream(pathFull, FileMode.Create))
+                        {
+                            var bytes = Convert.FromBase64String(usuario.FotoPerfil);
+                            fileStream.Write(bytes, 0, bytes.Length);
+                            fileStream.Flush();
+                            user.FotoPerfil = filePath;
+                        }
+
+                        _context.Usuarios.Update(user);
+                        _context.SaveChanges();
                     }
 
-                    using (var fileStream = new FileStream(pathFull, FileMode.Create))
-                    {
-                        var bytes = Convert.FromBase64String(usuario.FotoPerfil);
-                        fileStream.Write(bytes, 0, bytes.Length);
-                        fileStream.Flush();
-                        user.FotoPerfil = filePath;
-                    }
-
-                    _context.Usuarios.Update(user);
-                    _context.SaveChanges();
+                    msj.Mensaje = "Usuario registrado exitosamente! Ingrese por favor";
+                    
+                    return Ok(msj);
                 }
-
-                return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
             }
             catch (Exception ex)
             {

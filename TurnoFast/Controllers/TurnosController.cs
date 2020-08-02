@@ -315,12 +315,12 @@ namespace TurnoFastApi.Controllers
                     .Include(x => x.Horario)
                     .ThenInclude(y => y.Prestacion)
                     .Include(x => x.Usuario)
-                    .Where(x => x.UsuarioId != usuario.Id);
+                    .Where(x => x.Horario.Prestacion.ProfesionalId == usuario.Id);
 
                 List<Turno2> listaTurnos = new List<Turno2>();
                 Turno2 turno2 = null;
 
-                if (turnos != null)
+                if (turnos.Count() != 0)
                 {
                     foreach (Turno turno in turnos)
                     {
@@ -341,7 +341,7 @@ namespace TurnoFastApi.Controllers
                         }
                     }
 
-                    if (listaTurnos.Count != 0)
+                    if (listaTurnos.Count() != 0)
                     {
                         return Ok(listaTurnos);
                     }
@@ -349,6 +349,8 @@ namespace TurnoFastApi.Controllers
                     {
                         return BadRequest();
                     }
+                    
+                    
                 }
                 else
                 {
