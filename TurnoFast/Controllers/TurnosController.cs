@@ -40,72 +40,68 @@ namespace TurnoFastApi.Controllers
                 bool bandera = true;
                 DateTime hora = new DateTime();
 
-                var horarioPrestacion = await _context.Horarios
-                    .Include(x => x.Turnos)
-                    .FirstOrDefaultAsync(x => x.PrestacionId == prestacionid && x.DiaSemana == nrodia);
+                var turnos = _context.Turnos
+                    .Include(x => x.Horario)
+                    .Where(x => x.Horario.PrestacionId == prestacionid && x.Horario.DiaSemana == nrodia);
 
-                if (horarioPrestacion != null)
+                if (turnos != null)
                 {
-                    var turnos = horarioPrestacion.Turnos;
-                    hora = horarioPrestacion.HoraDesdeManiana;
-                    if (hora.Date != DateTime.MaxValue.Date)
+                    foreach (Turno turno in turnos)
                     {
-                        while (hora <= horarioPrestacion.HoraHastaManiana)
+                        hora = turno.Horario.HoraDesdeManiana;
+                        if (hora.Date != DateTime.MaxValue.Date)
                         {
-                            turno2 = new Turno2();
-                            for (int i = 0; i < turnos.Count; i++)
+                            while (hora <= turno.Horario.HoraHastaManiana)
                             {
-                                if (turnos[i].Fecha == fecha && turnos[i].Hora.TimeOfDay == hora.TimeOfDay)
+                                turno2 = new Turno2();
+                                if (turno.Fecha == fecha && turno.Hora.TimeOfDay == hora.TimeOfDay)
                                 {
                                     bandera = false;
                                 }
-                            }
-                            if (bandera)
-                            {
-                                turno2.HorarioId = horarioPrestacion.Id;
-                                turno2.Fecha = fecha;
-                                turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
 
-                                listaTurnos.Add(turno2);
+                                if (bandera)
+                                {
+                                    turno2.HorarioId = turno.Horario.Id;
+                                    turno2.Fecha = fecha;
+                                    turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
+
+                                    listaTurnos.Add(turno2);
+                                }
+                                else
+                                {
+                                    bandera = true;
+                                }
+                                hora = hora.AddMinutes(turno.Horario.Frecuencia);
                             }
-                            else
-                            {
-                                bandera = true;
-                            }
-                            hora = hora.AddMinutes(horarioPrestacion.Frecuencia);
                         }
-                    }
 
-                    hora = horarioPrestacion.HoraDesdeTarde;
-                    bandera = true;
-                    if (hora.Date != DateTime.MaxValue.Date)
-                    {
-                        while (hora.TimeOfDay <= horarioPrestacion.HoraHastaTarde.TimeOfDay)
+                        hora = turno.Horario.HoraDesdeTarde;
+                        bandera = true;
+                        if (hora.Date != DateTime.MaxValue.Date)
                         {
-                            turno2 = new Turno2();
-                            for (int i = 0; i < turnos.Count; i++)
+                            while (hora.TimeOfDay <= turno.Horario.HoraHastaTarde.TimeOfDay)
                             {
-                                if (turnos[i].Fecha == fecha && turnos[i].Hora.TimeOfDay == hora.TimeOfDay)
+                                turno2 = new Turno2();
+                                if (turno.Fecha == fecha && turno.Hora.TimeOfDay == hora.TimeOfDay)
                                 {
                                     bandera = false;
                                 }
-                            }
-                            if (bandera)
-                            {
-                                turno2.HorarioId = horarioPrestacion.Id;
-                                turno2.Fecha = fecha;
-                                turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
+                                if (bandera)
+                                {
+                                    turno2.HorarioId = turno.Horario.Id;
+                                    turno2.Fecha = fecha;
+                                    turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
 
-                                listaTurnos.Add(turno2);
+                                    listaTurnos.Add(turno2);
+                                }
+                                else
+                                {
+                                    bandera = true;
+                                }
+                                hora = hora.AddMinutes(turno.Horario.Frecuencia);
                             }
-                            else
-                            {
-                                bandera = true;
-                            }
-                            hora = hora.AddMinutes(horarioPrestacion.Frecuencia);
                         }
                     }
-
                     return Ok(listaTurnos);
                 }
                 else
