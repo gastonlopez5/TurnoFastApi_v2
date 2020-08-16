@@ -190,7 +190,13 @@ namespace TurnoFast.Controllers
 
             try
             {
+                string logo = null;
                 prestacion.ProfesionalId = _context.Usuarios.FirstOrDefault(x => x.Email == User.Identity.Name).Id;
+                if(prestacion.Logo != null)
+                {
+                    logo = prestacion.Logo;
+                    prestacion.Logo = "a";
+                }
                 _context.Prestaciones.Add(prestacion);
                 await _context.SaveChangesAsync();
 
@@ -210,7 +216,7 @@ namespace TurnoFast.Controllers
 
                     using (var fileStream = new FileStream(pathFull, FileMode.Create))
                     {
-                        var bytes = Convert.FromBase64String(prestacion.Logo);
+                        var bytes = Convert.FromBase64String(logo);
                         fileStream.Write(bytes, 0, bytes.Length);
                         fileStream.Flush();
                         prestation.Logo = filePath;

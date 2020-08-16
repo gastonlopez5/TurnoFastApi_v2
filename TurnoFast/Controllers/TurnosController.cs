@@ -44,7 +44,7 @@ namespace TurnoFastApi.Controllers
                     .Include(x => x.Horario)
                     .Where(x => x.Horario.PrestacionId == prestacionid && x.Horario.DiaSemana == nrodia);
 
-                if (turnos != null)
+                if (turnos.Count() != 0)
                 {
                     foreach (Turno turno in turnos)
                     {
@@ -106,7 +106,44 @@ namespace TurnoFastApi.Controllers
                 }
                 else
                 {
-                    return BadRequest();
+                    var horario = await _context.Horarios
+                        .FirstOrDefaultAsync(x => x.PrestacionId == prestacionid && x.DiaSemana == nrodia);
+
+                    hora = horario.HoraDesdeManiana;
+                    if (hora.Date != DateTime.MaxValue.Date)
+                    {
+                        while (hora <= horario.HoraHastaManiana)
+                        {
+                            turno2 = new Turno2();
+                            
+                            turno2.HorarioId = horario.Id;
+                            turno2.Fecha = fecha;
+                            turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
+
+                            listaTurnos.Add(turno2);
+                            
+                            hora = hora.AddMinutes(horario.Frecuencia);
+                        }
+                    }
+
+                    hora = horario.HoraDesdeTarde;
+                    if (hora.Date != DateTime.MaxValue.Date)
+                    {
+                        while (hora.TimeOfDay <= horario.HoraHastaTarde.TimeOfDay)
+                        {
+                            turno2 = new Turno2();
+                            
+                            turno2.HorarioId = horario.Id;
+                            turno2.Fecha = fecha;
+                            turno2.Hora = new Time(hora.TimeOfDay.Hours, hora.TimeOfDay.Minutes, 0, 0);
+
+                            listaTurnos.Add(turno2);
+                            
+                            hora = hora.AddMinutes(horario.Frecuencia);
+                        }
+                    }
+
+                    return Ok(listaTurnos);
                 }
             }
             catch (Exception ex)

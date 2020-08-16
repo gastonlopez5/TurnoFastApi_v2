@@ -42,8 +42,9 @@ namespace TurnoFastApi.Controllers
         {
             try
             {
-                var horario = await _context.Horarios.Where(x => x.PrestacionId == id && x.DiaSemana == nrodia).FirstOrDefaultAsync();
+                var horario = await _context.Horarios.FirstOrDefaultAsync(x => x.PrestacionId == id && x.DiaSemana == nrodia);
                 Horario2 horario2 = new Horario2();
+                DateTime dateTime = new DateTime(1987, 1, 18, 7, 7, 7);
 
                 if (horario == null)
                 {
@@ -54,13 +55,13 @@ namespace TurnoFastApi.Controllers
                 horario2.Frecuencia = horario.Frecuencia;
                 horario2.Id = horario.Id;
 
-                if (horario.HoraDesdeManiana.Year != DateTime.MaxValue.Year)
+                if (horario.HoraDesdeManiana.Year != dateTime.Year)
                 {
                     horario2.HoraDesdeManiana = new Time(horario.HoraDesdeManiana.Hour, horario.HoraDesdeManiana.Minute, 0, 0);
                     horario2.HoraHastaManiana = new Time(horario.HoraHastaManiana.Hour, horario.HoraHastaManiana.Minute, 0, 0);
                 }
 
-                if (horario.HoraDesdeTarde.Year != DateTime.MaxValue.Year)
+                if (horario.HoraDesdeTarde.Year != dateTime.Year)
                 {
                     horario2.HoraDesdeTarde = new Time(horario.HoraDesdeTarde.Hour, horario.HoraDesdeTarde.Minute, 0, 0);
                     horario2.HoraHastaTarde = new Time(horario.HoraHastaTarde.Hour, horario.HoraHastaTarde.Minute, 0, 0);
@@ -83,6 +84,7 @@ namespace TurnoFastApi.Controllers
             {
                 Horario horario = null;
                 Msj mensaje = new Msj();
+                DateTime dateTime = new DateTime(1987, 1, 18, 7, 7, 7);
 
                 if (ModelState.IsValid && _context.Horarios.AsNoTracking().SingleOrDefault(e => e.Id == entidad.Id) != null)
                 {
@@ -97,8 +99,8 @@ namespace TurnoFastApi.Controllers
                     }
                     else
                     {
-                        horario.HoraDesdeManiana = DateTime.MaxValue;
-                        horario.HoraHastaManiana = DateTime.MaxValue;
+                        horario.HoraDesdeManiana = dateTime;
+                        horario.HoraHastaManiana = dateTime;
                     }
 
                     if (entidad.HoraDesdeTarde != null)
@@ -108,8 +110,8 @@ namespace TurnoFastApi.Controllers
                     }
                     else
                     {
-                        horario.HoraDesdeTarde = DateTime.MaxValue;
-                        horario.HoraHastaTarde = DateTime.MaxValue;
+                        horario.HoraDesdeTarde = dateTime;
+                        horario.HoraHastaTarde = dateTime;
                     }
 
                     _context.Horarios.Update(horario);
@@ -136,6 +138,7 @@ namespace TurnoFastApi.Controllers
             {
                 Horario horario = new Horario();
                 Msj msj = new Msj();
+                DateTime dateTime = new DateTime(1987, 1, 18, 7, 7, 7);
 
                 if (horario2.HoraDesdeManiana != null)
                 {
@@ -144,8 +147,8 @@ namespace TurnoFastApi.Controllers
                 }
                 else
                 {
-                    horario.HoraDesdeManiana = DateTime.MaxValue;
-                    horario.HoraHastaManiana = DateTime.MaxValue;
+                    horario.HoraDesdeManiana = dateTime;
+                    horario.HoraHastaManiana = dateTime;
                 }
 
                 if (horario2.HoraDesdeTarde != null)
@@ -155,8 +158,8 @@ namespace TurnoFastApi.Controllers
                 }
                 else
                 {
-                    horario.HoraDesdeTarde = DateTime.MaxValue;
-                    horario.HoraHastaTarde = DateTime.MaxValue;
+                    horario.HoraDesdeTarde = dateTime;
+                    horario.HoraHastaTarde = dateTime;
                 }
 
                 horario.Frecuencia = horario2.Frecuencia;

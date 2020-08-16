@@ -202,6 +202,7 @@ namespace TurnoFast.Controllers
             try
             {
                 Msj msj = new Msj();
+                string foto = null;
 
                 if (_context.Usuarios.Any(x => x.Email == usuario.Email))
                 {
@@ -218,6 +219,12 @@ namespace TurnoFast.Controllers
 
                     usuario.Estado = true;
                     usuario.Clave = hashed;
+
+                    if(usuario.FotoPerfil != null)
+                    {
+                        foto = usuario.FotoPerfil;
+                        usuario.FotoPerfil = "a";
+                    }
 
                     _context.Usuarios.Add(usuario);
                     await _context.SaveChangesAsync();
@@ -238,7 +245,7 @@ namespace TurnoFast.Controllers
 
                         using (var fileStream = new FileStream(pathFull, FileMode.Create))
                         {
-                            var bytes = Convert.FromBase64String(usuario.FotoPerfil);
+                            var bytes = Convert.FromBase64String(foto);
                             fileStream.Write(bytes, 0, bytes.Length);
                             fileStream.Flush();
                             user.FotoPerfil = filePath;
